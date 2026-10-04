@@ -5,16 +5,26 @@
 import hashlib
 
 
-def calculate_file_hash(filename):
-    digest = hashlib.sha256()                    # create an empty SHA-256 calculator
-    with open(filename, "rb") as f:              # open the file in binary mode
+def calculate_file_hash(filepath, chunk_size=4096):
+    """Compute SHA-256 hash of a file by reading it in chunks.
+
+    Args:
+        filepath: path to the file to hash
+        chunk_size: bytes read per iteration (default 4096)
+
+    Returns:
+        hex digest string of the SHA-256 hash
+    """
+    digest = hashlib.sha256()
+    with open(filepath, "rb") as f:
         while True:
-            block = f.read(4096)                 # read 4 KB at a time
-            if not block:                        # empty read = end of file
+            block = f.read(chunk_size)
+            if not block:
                 break
-            digest.update(block)                 # feed the block to the calculator
-    return digest.hexdigest()                    # final hash as a hex string
+            digest.update(block)
+    return digest.hexdigest()
 
 
-def files_match(first, second):
-    return calculate_file_hash(first) == calculate_file_hash(second)
+def files_match(file1, file2):
+    """Return True if two files have identical SHA-256 hashes."""
+    return calculate_file_hash(file1) == calculate_file_hash(file2)
