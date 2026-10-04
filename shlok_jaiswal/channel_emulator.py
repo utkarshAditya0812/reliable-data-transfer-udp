@@ -102,16 +102,12 @@ class ChannelSocket:
             self.closed = True                       # tell the worker to stop
             self.lock.notify()
         self.sock.close()
-if __name__ == "__main__":
-    import argparse
+def test_stats(seed=42, loss=0.2, duplicate=0.1, corrupt=0.05, reorder=0.1, delay=0.01, jitter=0.005):
+    """
+    Comprehensive stats test: sends multiple packets and reports all channel metrics.
+    Demonstrates that the channel emulator correctly tracks and reports its behavior.
+    """
     import socket
-
-    parser = argparse.ArgumentParser(description="Test the channel emulator in isolation")
-    parser.add_argument("--loss", type=float, default=0.1)
-    parser.add_argument("--duplicate", type=float, default=0.0)
-    parser.add_argument("--corrupt", type=float, default=0.0)
-    parser.add_argument("--seed", type=int, default=42)
-    args = parser.parse_args()
 
     receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     receiver.bind(("127.0.0.1", 0))
@@ -119,21 +115,96 @@ if __name__ == "__main__":
     receiver.settimeout(2)
 
     sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    chan = ChannelSocket(sock=sender, loss=args.loss, duplicate=args.duplicate,
-                         corrupt=args.corrupt, seed=args.seed)
+    chan = ChannelSocket(
+        sock=sender,
+        loss=loss,
+        duplicate=duplicate,
+        reorder=reorder,
+        corrupt=corrupt,
+        delay=delay,
+        jitter=jitter,
+        seed=seed
+    )
 
-    message = b"Hello, this is a test packet from Shlok Jaiswal"
-    print(f"Sent: {message}")
+    num_packets = 20
+    print(f"=== Channel Stats Test ===")
+    print(f"Seed: {seed}")
+    print(f"Parameters: loss={loss}, dup={duplicate}, corrupt={corrupt}, reorder={reorder}, delay={delay}s, jitter={jitter}s")
+    print(f"Sending {num_packets} packets...\n")
 
-    chan.sendto(message, receiver_addr)
+    for i in range(num_packets):
+        msg = f"Packet-{i:02d}".encode()
+        chan.sendto(msg, receiver_addr)
 
+    received = []
     try:
-        received, _ = receiver.recvfrom(4096)
-        print(f"Received: {received}")
-        print(f"Intact: {received == message}")
+        while True:
+            data, _ = receiver.recvfrom(4096)
+            received.append(data)
     except socket.timeout:
-        print("Packet was dropped by the channel (expected with high loss)")
+        pass
 
-    print(f"Dropped: {chan.dropped}, Duplicated: {chan.duplicated}, Corrupted: {chan.corrupted}")
+    print(f"--- Results ---")
+    print(f"Packets sent (original): {num_packets}")
+    print(f"Packets received: {len(received)}")
+    print(f"Dropped by channel: {chan.dropped}")
+    print(f"Duplicated by channel: {chan.duplicated}")
+    print(f"Corrupted by channel: {chan.corrupted}")
+    print(f"Total delivered (including duplicates): {len(received)}")
+
     sender.close()
     receiver.close()
+    chan.close()
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Test the channel emulator")
+    parser.add_argument("--mode", choices=["quick", "stats"], default="quick",
+                        help="quick = single packet test, stats = comprehensive multi-packet test")
+    parser.add_argument("--loss", type=float, default=0.2)
+    parser.add_argument("--duplicate", type=float, default=0.0)
+    parser.add_argument("--corrupt", type=float, default=0.0)
+    parser.add_argument("--reorder", type=float, default=0.0)
+    parser.add_argument("--delay", type=float, default=0.0)
+    parser.add_argument("--jitter", type=float, default=0.0)
+    parser.add_argument("--seed", type=int, default=42)
+    args = parser.parse_args()
+
+    if args.mode == "stats":
+        test_stats(
+            seed=args.seed,
+            loss=args.loss,
+            duplicate=args.duplicate,
+            corrupt=args.corrupt,
+            reorder=args.reorder,
+            delay=args.delay,
+            jitter=args.jitter
+        )
+    else:
+        receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        receiver.bind(("127.0.0.1", 0))
+        receiver_addr = receiver.getsockname()
+        receiver.settimeout(2)
+
+        sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        chan = ChannelSocket(sock=sender, loss=args.loss, duplicate=args.duplicate,
+                             corrupt=args.corrupt, seed=args.seed)
+
+        message = b"Hello, this is a test packet from Shlok Jaiswal"
+        print(f"Sent: {message}")
+
+        chan.sendto(message, receiver_addr)
+
+        try:
+            received, _ = receiver.recvfrom(4096)
+            print(f"Received: {received}")
+            print(f"Intact: {received == message}")
+        except socket.timeout:
+            print("Packet was dropped by the channel (expected with high loss)")
+
+        print(f"Dropped: {chan.dropped}, Duplicated: {chan.duplicated}, Corrupted: {chan.corrupted}")
+        sender.close()
+        receiver.close()
+        chan.close()
