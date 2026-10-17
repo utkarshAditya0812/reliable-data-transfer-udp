@@ -25,4 +25,13 @@ def send(chan, dest, chunks, window, timeout, adaptive=True):
     last_progress = time.time()
     packets_sent = 0
     retransmissions = 0
+    
+    while base < total:
+        while next_seq < total and next_seq < base + window:
+            chan.sendto(packets[next_seq], dest)
+            packets_sent += 1
+            if base == next_seq:
+                timer_start = time.time()
+            next_seq += 1
+
 
