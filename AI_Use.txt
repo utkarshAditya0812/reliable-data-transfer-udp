@@ -1,0 +1,9 @@
+AI Tool Usage Disclosure – Reliable Data Transfer over UDP Project
+
+AI tools were used occasionally during the development of this Reliable Data Transfer over UDP project. Claude was consulted to clarify programming concepts, understand selected implementation details, and obtain suggestions related to the UDP protocol and its implementation.
+
+The team used AI assistance as a supplementary learning resource while working on the project. The suggestions were reviewed and considered alongside the team's understanding of computer networking concepts. The project involved working with code files, understanding packet handling, examining checksum functionality, and studying the mechanisms used to support reliable data transmission over UDP.
+
+AI assistance helped clarify technical doubts and provided guidance during development. However, the team remained responsible for reviewing the code, integrating the relevant components, running the program, and checking its behavior. The purpose of using AI tools was to support the development and learning process rather than replace the team's understanding of the project.
+
+This disclosure acknowledges the limited use of AI assistance during development. The submitted project is intended to demonstrate the principles of reliable communication over UDP and the practical application of networking concepts. The team accepts responsibility for the submitted work and its explanation.
