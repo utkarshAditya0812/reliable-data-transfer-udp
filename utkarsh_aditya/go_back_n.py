@@ -54,3 +54,28 @@ def send(chan, dest, chunks, window, timeout, adaptive=True):
     return {"packets_sent": packets_sent, "retransmissions": retransmissions} 
 
 
+def receive(chan, dest, window, linger):
+    expected = 0            # next in-order sequence number we want
+    chunks = []
+    finished = False
+
+    while True:
+        wait = linger if finished else GIVE_UP_SECONDS
+        packet = receive_packet(chan, wait)
+        if packet is None:
+            if finished:
+                return chunks
+            raise TimeoutError("go-back-n: sender went silent")
+
+        packet_type, seq, payload = packet
+        if packet_type == ACK:
+            continue
+        if seq == expected:                     # in order -> accept
+            if packet_type == FIN:
+                finished = True
+            else:
+                chunks.append(payload)
+            expected += 1
+        # Out-of-order packets are simply discarded (that is Go-Back-N!).
+        # Always answer with a cumulative ACK = next packet we expect.
+        chan.sendto(make_packet(ACK, expected), dest)
