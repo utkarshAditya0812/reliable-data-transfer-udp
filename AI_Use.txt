@@ -1,9 +1,12 @@
-AI Tool Usage Disclosure – Reliable Data Transfer over UDP Project
+AI USE AND TEAM CONTRIBUTION DISCLOSURE
+Project: Reliable Data Transfer over UDP
 
-AI tools were used occasionally during the development of this Reliable Data Transfer over UDP project. Claude was consulted to clarify programming concepts, understand selected implementation details, and obtain suggestions related to the UDP protocol and its implementation.
+AI tool used: Claude (Anthropic)
 
-The team used AI assistance as a supplementary learning resource while working on the project. The suggestions were reviewed and considered alongside the team's understanding of computer networking concepts. The project involved working with code files, understanding packet handling, examining checksum functionality, and studying the mechanisms used to support reliable data transmission over UDP.
+AI assistance was used during early development to help generate an initial codebase, suggest project structure, explain implementation approaches, and support troubleshooting. Its output served as a starting point, not a substitute for the team's engineering work or verification.
 
-AI assistance helped clarify technical doubts and provided guidance during development. However, the team remained responsible for reviewing the code, integrating the relevant components, running the program, and checking its behavior. The purpose of using AI tools was to support the development and learning process rather than replace the team's understanding of the project.
+The students took responsibility for turning that starting point into a working, tested project. The team examined how components fit together, integrated the protocol implementations, ran the application, investigated errors, and checked whether observed behaviour matched reliable data transfer requirements. Work was divided across the implementation: Arijeet Kundu handled checksum and packet handling and Stop-and-Wait; Utkarsh Aditya handled Go-Back-N; Vedant Bhatnagar handled Selective Repeat and retransmission-timeout handling; and Shlok Jaiswal handled the channel emulator, file-integrity utilities, experiments, and result plots.
 
-This disclosure acknowledges the limited use of AI assistance during development. The submitted project is intended to demonstrate the principles of reliable communication over UDP and the practical application of networking concepts. The team accepts responsibility for the submitted work and its explanation.
+The team tested all three ARQ protocols—Stop-and-Wait, Go-Back-N, and Selective Repeat—under channel conditions including packet loss and reordering, and resolving issues found during repeated test runs. It reviewed transmission and retransmission behaviour, compared measured results, and used SHA-256 checks to verify that the received file matched the original. These experiments helped the students connect acknowledgements, sequence numbers, timeouts, buffering, and retransmissions with actual program behaviour.
+
+AI assistance was therefore limited to guidance and acceleration during development. The students remained responsible for integration, execution, testing, interpreting results, and understanding the submitted system. This disclosure acknowledges both AI-generated assistance and the team's practical contribution; it does not claim that every line of code was written independently.
